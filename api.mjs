@@ -15,8 +15,8 @@ app.use(express.json());
 const httpServer = http.createServer(app);
 const io = new Server(httpServer, {
   cors: {
-      origin: "*"
-    //origin: "https://majestic-custard-58db78.netlify.app"
+      // origin: "*"
+    origin: "https://dynamic-squirrel-9219c9.netlify.app"
   },
 });
 
