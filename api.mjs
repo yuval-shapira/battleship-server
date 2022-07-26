@@ -2,7 +2,6 @@ import express from "express";
 import game_router from "./modules/game.router.mjs";
 import http from "http";
 import { Server } from "socket.io";
-//import fs from "fs";
 
 import cors from "cors";
 import log from "@ajar/marker";
@@ -34,19 +33,15 @@ io.on("connection", (socket) => {
     const { gameID, playerName } = data;
     const playerID = socket.id;
     socket.join(gameID);
-    console.log("gameID", gameID);
-    console.log("player2_name_SERVER:", playerName);
 
     socket.to(gameID).emit("player2_name", { gameID, playerName, playerID}); // 2 > 1
   });
   socket.on("get_host_name", (data) => {
-    const { gameID, playerName } = data;
+    const { gameID, playerName, isPlayerReady } = data;
     const playerID = socket.id;
-    socket.to(gameID).emit("player1_name", { gameID, playerName, playerID }); // 1 > 2
+    socket.to(gameID).emit("player1_name", { gameID, playerName, playerID, isPlayerReady }); // 1 > 2
   });
-  socket.on("are_you_ready", (gameID) => {
-    socket.to(gameID).emit("am_i_ready");
-  });
+
   socket.on("i_am_ready", (gameID) => {
     socket.to(gameID).emit("opponent_is_ready");
   });
@@ -62,16 +57,23 @@ io.on("connection", (socket) => {
     socket.to(gameID).emit("you_lost")
   }
   );
+  socket.on("new_game_request", ({gameID, playerName}) => {
+    socket.to(gameID).emit("new_game_req", playerName); 
+  }
+  );
+  socket.on("new_game_response", ({gameID, myResponse}) => {
+    socket.to(gameID).emit("new_game_response", (myResponse));
+  }
+  );
   socket.on("disconnect", () => {
-    socket.emit("disconnected", socket.id);
-    console.log(
-      "socket disconnected, ID:",
-      socket.id
-    );
+    //const oppID = socket.id;
+    socket.broadcast.emit("opponent disconnected", socket.id);
+    console.log("socket disconnected, ID:", socket.id);
+    //socket.leave(gameID);
   });
 });
 
-app.use("/api", game_router);
+//app.use("/api", game_router);
 
 app.use((req, res, next) => {
   res.status(404).send(` - 404 - url was not found`);
