@@ -1,5 +1,4 @@
 import express from "express";
-import game_router from "./modules/game.router.mjs";
 import http from "http";
 import { Server } from "socket.io";
 
@@ -66,14 +65,10 @@ io.on("connection", (socket) => {
   }
   );
   socket.on("disconnect", () => {
-    //const oppID = socket.id;
     socket.broadcast.emit("opponent disconnected", socket.id);
     console.log("socket disconnected, ID:", socket.id);
-    //socket.leave(gameID);
   });
 });
-
-//app.use("/api", game_router);
 
 app.use((req, res, next) => {
   res.status(404).send(` - 404 - url was not found`);
