@@ -15,24 +15,33 @@ app.use(express.json());
 const httpServer = http.createServer(app);
 const io = new Server(httpServer, {
   cors: {
-      // origin: "*"
-    origin: "https://dynamic-squirrel-9219c9.netlify.app"
+       origin: "*"
+    // origin: "https://dynamic-squirrel-9219c9.netlify.app"
   },
 });
 
 io.on("connection", (socket) => {
   console.log("socket connected, ID:", socket.id);
   socket.emit("socket_id", socket.id);
-
   socket.on("create_a_game", (gameID) => {
     socket.join(gameID);
   });
+
+  socket.on("check_if_can_join_game", (data) => {
+    const { gameID, playerID } = data;
+    socket.to(gameID).emit("check_if_can_join_game", { playerID });
+  })
+
+  socket.on("can_join_the_game", (data) => {
+    const { playerID} = data;
+    socket.to(playerID).emit("YOU_can_join_the_game");
+  }
+  );
 
   socket.on("join_to_existing_game", (data) => {
     const { gameID, playerName } = data;
     const playerID = socket.id;
     socket.join(gameID);
-
     socket.to(gameID).emit("player2_name", { gameID, playerName, playerID}); // 2 > 1
   });
   socket.on("get_host_name", (data) => {
